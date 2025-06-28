@@ -1,0 +1,304 @@
+{
+  "PixisphereSchema": {
+
+    "users": {
+      "id": "UUID (Primary Key)",
+      "username": "string",
+      "password": "string (hashed)",
+      "email": "string (unique)",
+      "email_verified_at": "timestamp (nullable)",
+      "phone": { "country_code": "string", "number": "string" },
+      "phone_verified_at": "timestamp (nullable)",
+      "profile_pic": "string (URL)",
+      "address": "string",
+      "user_type": "enum ['client', 'partner', 'admin']",
+      "plan_id": "UUID (nullable, Foreign Key to plans.id)",
+      "last_login_at": "timestamp (nullable)",
+      "notification_preferences": "json",
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "deleted_at": "timestamp (nullable)"
+    },
+
+    "clients": {
+      "user_id": "UUID (Primary Key, Foreign Key to users.id)",
+      "favourite_partners": ["UUID"]
+    },
+
+    "partners": {
+      "user_id": "UUID (Primary Key, Foreign Key to users.id)",
+      "company_name": "string",
+      "specializations": ["string"],
+      "documents": [{
+        "doc_name": "string",
+        "file_url": "string",
+        "status": "enum ['pending', 'approved', 'rejected']",
+        "rejection_reason": "string (nullable)"
+      }],
+      "banner": "string (URL)",
+      "portfolio": ["string (URL)"],
+      "experience_years": "int",
+      "services": [{
+        "service_id": "UUID",
+        "name": "string",
+        "description": "string",
+        "base_price": "int",
+        "price_unit": "enum ['per_hour', 'per_day', 'per_project']"
+      }],
+      "location_pricing": { "city": "price" },
+      "payment_methods": "json",
+      "serving_locations": ["string"],
+      "partner_type": "enum ['studio', 'solo', 'firm', 'partnership']",
+      "avg_rating": "float",
+      "verified": "boolean",
+      "social_links": {
+        "website": "string", "instagram": "string", "facebook": "string", "x": "string", "pinterest": "string", "youtube": "string"
+      },
+      "project_stats": { "total": "int", "completed": "int", "ongoing": "int" },
+      "dashboard_data": "json",
+      "partner_locations": [{
+        "city": "string", "state": "string", "coordinates": { "lat": "float", "lng": "float" }, "pin_codes_served": ["string"]
+      }],
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "deleted_at": "timestamp (nullable)"
+    },
+
+    "packages": {
+      "id": "UUID (Primary Key)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "title": "string",
+      "description": "string",
+      "price": "int",
+      "duration": "string",
+      "features": ["string"],
+      "location_applicability": ["string"],
+      "photos_included": "int",
+      "videos_included": "int",
+      "album_included": "boolean",
+      "photography_type": ["string"],
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "deleted_at": "timestamp (nullable)"
+    },
+
+    "admins": {
+      "user_id": "UUID (Primary Key, Foreign Key to users.id)",
+      "social_links": "json",
+      "created_at": "timestamp",
+      "updated_at": "timestamp"
+    },
+
+    "bookings": {
+      "id": "UUID (Primary Key)",
+      "booking_name": "string",
+      "client_id": "UUID (Foreign Key to clients.user_id)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "package_id": "UUID (nullable, Foreign Key to packages.id)",
+      "event_datetime": "timestamp",
+      "event_location": "string",
+      "pricing_details": {
+        "base_price": "int",
+        "addons": [{ "name": "string", "price": "int" }],
+        "discount_id": "UUID (nullable, Foreign Key to discount_coupons.id)",
+        "taxes": "int",
+        "total_amount": "int",
+        "currency": "string"
+      },
+      "progress": [{ "milestone": "string", "status": "string", "completed_at": "timestamp" }],
+      "special_instructions": "string",
+      "delivery_details": { "method": "string", "source_url": "string" },
+      "status": "enum ['pending_approval', 'confirmed', 'ongoing', 'completed', 'cancelled_by_client', 'cancelled_by_partner', 'postponed']",
+      "duration_in_hours": "float",
+      "created_at": "timestamp",
+      "updated_at": "timestamp"
+    },
+
+    "leads": {
+      "id": "UUID (Primary Key)",
+      "client_id": "UUID (Foreign Key to clients.user_id)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "message": "string",
+      "status": "enum ['new', 'contacted', 'converted', 'closed']",
+      "timestamp": "timestamp"
+    },
+
+    "transactions": {
+      "id": "UUID (Primary Key)",
+      "booking_id": "UUID (nullable, Foreign Key to bookings.id)",
+      "plan_purchase_id": "UUID (nullable, relates to a partner buying a subscription)",
+      "client_id": "UUID (Foreign Key to clients.user_id)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "amount": "int",
+      "currency": "string",
+      "payment_gateway_id": "string",
+      "payment_method": "string",
+      "status": "enum ['pending', 'successful', 'failed', 'refunded']",
+      "timestamp": "timestamp"
+    },
+
+    "reviews": {
+      "id": "UUID (Primary Key)",
+      "client_id": "UUID (Foreign Key to clients.user_id)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "booking_id": "UUID (Foreign Key to bookings.id)",
+      "rating": "float",
+      "message": "string",
+      "is_anonymous": "boolean",
+      "likes": "int",
+      "dislikes": "int",
+      "created_at": "timestamp"
+    },
+
+    "review_replies": {
+      "id": "UUID (Primary Key)",
+      "review_id": "UUID (Foreign Key to reviews.id)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "message": "string",
+      "created_at": "timestamp",
+      "updated_at": "timestamp"
+    },
+
+    "faqs": {
+      "id": "UUID (Primary Key)",
+      "question": "string",
+      "answer": "string",
+      "keywords": ["string"],
+      "created_by": "UUID (Foreign Key to users.id, likely an admin)",
+      "created_at": "timestamp"
+    },
+
+    "feedbacks": {
+      "id": "UUID (Primary Key)",
+      "user_id": "UUID (Foreign Key to users.id)",
+      "user_type": "enum ['client', 'partner', 'admin']",
+      "message": "string",
+      "timestamp": "timestamp"
+    },
+
+    "blogs": {
+      "id": "UUID (Primary Key)",
+      "author_id": "UUID (Foreign Key to users.id)",
+      "author_name": "string",
+      "title": "string",
+      "message": "text",
+      "document": "string (URL)",
+      "keywords": ["string"],
+      "timestamp": "timestamp"
+    },
+
+    "categories": {
+      "id": "UUID (Primary Key)",
+      "name": "string",
+      "slug": "string",
+      "description": "text",
+      "icon": "string (URL)",
+      "parent_id": "UUID (nullable, Foreign Key to categories.id)",
+      "cover_image": "string (URL)",
+      "seo_meta": { "title": "string", "description": "string", "keywords": ["string"] },
+      "created_at": "timestamp"
+    },
+
+    "locations": {
+      "id": "UUID (Primary Key)",
+      "name": "string",
+      "slug": "string",
+      "location_type": "enum ['city', 'state', 'region', 'country']",
+      "parent_id": "UUID (nullable, Foreign Key to locations.id)",
+      "pin_codes": ["string"],
+      "coordinates": { "lat": "float", "lng": "float" },
+      "cover_image": "string (URL)",
+      "seo_meta": { "title": "string", "description": "string", "keywords": ["string"] },
+      "created_at": "timestamp"
+    },
+
+    "seo_landing_pages": {
+      "id": "UUID (Primary Key)",
+      "category_id": "UUID (nullable, Foreign Key to categories.id)",
+      "location_id": "UUID (nullable, Foreign Key to locations.id)",
+      "slug": "string (unique)",
+      "h1_title": "string",
+      "meta_title": "string",
+      "meta_description": "string",
+      "page_content": "text (supports Markdown/HTML)",
+      "cover_image": "string (URL)",
+      "featured_partners": ["UUID"],
+      "partner_sort_logic": "enum ['rating_desc', 'experience_desc', 'price_asc']",
+      "ranking_score": "int",
+      "structured_data": "json",
+      "related_pages": ["UUID (Foreign Key to seo_landing_pages.id)"],
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "published_at": "timestamp (nullable)"
+    },
+    
+    "page_faqs": {
+        "id": "UUID (Primary Key)",
+        "page_id": "UUID (Foreign Key to seo_landing_pages.id)",
+        "question": "string",
+        "answer": "text",
+        "display_order": "int"
+    },
+
+    "plans": {
+      "id": "UUID (Primary Key)",
+      "name": "string",
+      "price_monthly": "int",
+      "price_yearly": "int",
+      "currency": "string",
+      "features": {
+        "max_portfolio_items": "int", "max_packages": "int", "featured_on_homepage": "boolean", "commission_rate_percent": "float", "analytics_access": "boolean"
+      },
+      "is_active": "boolean"
+    },
+
+    "partner_availability": {
+      "id": "UUID (Primary Key)",
+      "partner_id": "UUID (Foreign Key to partners.user_id)",
+      "start_time": "timestamp",
+      "end_time": "timestamp",
+      "is_booked": "boolean",
+      "booking_id": "UUID (nullable, Foreign Key to bookings.id)",
+      "recurring_rule": "string (iCal RRULE format)"
+    },
+
+    "chat_messages": {
+      "id": "UUID (Primary Key)",
+      "conversation_id": "string",
+      "sender_id": "UUID (Foreign Key to users.id)",
+      "recipient_id": "UUID (Foreign Key to users.id)",
+      "message": "string",
+      "read_at": "timestamp (nullable)",
+      "sent_at": "timestamp"
+    },
+
+    "notifications": {
+      "id": "UUID (Primary Key)",
+      "user_id": "UUID (Foreign Key to users.id)",
+      "type": "enum ['new_lead', 'booking_confirmed', 'payment_received', 'review_posted', 'message_received']",
+      "title": "string",
+      "message": "string",
+      "reference_url": "string",
+      "is_read": "boolean",
+      "created_at": "timestamp"
+    },
+
+    "discount_coupons": {
+      "id": "UUID (Primary Key)",
+      "code": "string (unique)",
+      "discount_type": "enum ['percentage', 'fixed_amount']",
+      "value": "float",
+      "max_uses": "int",
+      "current_uses": "int",
+      "valid_from": "timestamp",
+      "valid_until": "timestamp",
+      "created_by": "UUID (Foreign Key to users.id, admin)"
+    },
+
+    "page_views": {
+      "page_slug": "string",
+      "views": "int",
+      "last_viewed": "timestamp"
+    }
+  }
+}
