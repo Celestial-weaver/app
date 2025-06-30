@@ -31,7 +31,7 @@ export function PhotographerCard({
   verified = false,
 }: PhotographerCardProps) {
   const cardContent = (
-    <Card className="group flex-shrink-0 w-80 cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden">
+    <Card className="group w-full cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden">
       <div className="relative">
         <img
           src={image || "/placeholder.svg?height=240&width=320"}

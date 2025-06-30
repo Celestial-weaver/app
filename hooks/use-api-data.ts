@@ -99,7 +99,13 @@ export function usePhotographers(params: UsePhotographersParams = {}) {
             .filter((p) => p.partnerType !== "studio")
             .map(mapPartnerToPhotographer)
 
-          setPhotographers((prev) => (queryParams.page === 1 ? mappedPhotographers : [...prev, ...mappedPhotographers]))
+          setPhotographers((prev) => {
+            if (queryParams.page === 1) return mappedPhotographers
+            // Deduplicate by id to avoid React duplicate key warnings
+            const existingIds = new Set(prev.map((p) => p.id))
+            const uniqueToAdd = mappedPhotographers.filter((p) => !existingIds.has(p.id))
+            return [...prev, ...uniqueToAdd]
+          })
           setHasNextPage(response.data.pagination?.hasNext || false)
         } else if (!cancelled) {
           setError(response.message || "Failed to load photographers")
@@ -153,9 +159,16 @@ export function useStudios(params: UseStudiosParams = {}) {
         const response = await apiClient.getPartners(queryParams)
 
         if (!cancelled && response.success && response.data?.partners) {
-          const mappedStudios = response.data.partners.filter((p) => p.partnerType === "studio").map(mapPartnerToStudio)
+          const mappedStudios = response.data.partners
+            .filter((p) => p.partnerType === "studio")
+            .map(mapPartnerToStudio)
 
-          setStudios((prev) => (queryParams.page === 1 ? mappedStudios : [...prev, ...mappedStudios]))
+          setStudios((prev) => {
+            if (queryParams.page === 1) return mappedStudios
+            const existingIds = new Set(prev.map((s) => s.id))
+            const uniqueToAdd = mappedStudios.filter((s) => !existingIds.has(s.id))
+            return [...prev, ...uniqueToAdd]
+          })
           setHasNextPage(response.data.pagination?.hasNext || false)
         } else if (!cancelled) {
           setError(response.message || "Failed to load studios")
@@ -198,9 +211,12 @@ export function useLocations(params: UseLocationsParams = {}) {
         const response = await apiClient.getFilterOptions()
 
         if (!cancelled && response.success && response.data?.filters?.locations) {
-          const mappedLocations = response.data.filters.locations.map((location: string) => ({
+          // Deduplicate locations (case-sensitive) to avoid rendering duplicates
+          const uniqueLocations = Array.from(new Set(response.data.filters.locations))
+
+          const mappedLocations = uniqueLocations.map((location: string) => ({
             name: location,
-            photographers: Math.floor(Math.random() * 100) + 20, // placeholder count
+            photographers: Math.floor(Math.random() * 100) + 20, // placeholder count (TODO: replace with real count)
           }))
           setLocations(mappedLocations)
         } else if (!cancelled) {

@@ -13,7 +13,7 @@ interface LocationCardProps {
 
 function LocationCard({ name, photographers, image }: LocationCardProps) {
   return (
-    <Link href={`/photographers/${name.toLowerCase()}`}>
+    <Link href={`/search-results?location=${encodeURIComponent(name)}`}>
       <Card className="group cursor-pointer border-0 shadow-sm hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
         <div className="relative h-40 sm:h-48">
           <img
@@ -49,17 +49,9 @@ function LocationSkeleton() {
 export function FeaturedLocations() {
   const { locations, loading, error } = useLocations()
 
-  // Default location images
-  const locationImages: Record<string, string> = {
-    Mumbai: "/placeholder.svg?height=192&width=320&text=Mumbai",
-    Delhi: "/placeholder.svg?height=192&width=320&text=Delhi",
-    Bangalore: "/placeholder.svg?height=192&width=320&text=Bangalore",
-    Chennai: "/placeholder.svg?height=192&width=320&text=Chennai",
-    Hyderabad: "/placeholder.svg?height=192&width=320&text=Hyderabad",
-    Kolkata: "/placeholder.svg?height=192&width=320&text=Kolkata",
-    Pune: "/placeholder.svg?height=192&width=320&text=Pune",
-    Ahmedabad: "/placeholder.svg?height=192&width=320&text=Ahmedabad",
-  }
+  // Helper to generate a city image from Unsplash. Cache-busted with city name so it stays constant per deploy.
+  const getLocationImage = (city: string) =>
+    `https://source.unsplash.com/600x400/?${encodeURIComponent(city)}%20city,india`
 
   if (loading) {
     return (
@@ -87,7 +79,7 @@ export function FeaturedLocations() {
           key={location.name}
           name={location.name}
           photographers={location.photographers}
-          image={locationImages[location.name] || "/placeholder.svg?height=192&width=320"}
+          image={getLocationImage(location.name)}
         />
       ))}
     </div>

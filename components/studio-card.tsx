@@ -29,7 +29,7 @@ export function StudioCard({
   price,
 }: StudioCardProps) {
   const body = (
-    <Card className="flex-shrink-0 w-80 group cursor-pointer border-0 shadow-sm hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+    <Card className="w-full group cursor-pointer border-0 shadow-sm hover:shadow-lg transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
       <div className="relative">
         <img
           src={image || "/placeholder.svg?height=240&width=320"}
