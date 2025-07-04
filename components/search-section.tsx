@@ -135,7 +135,7 @@ export function SearchSection({ onAIPromptClick }: SearchSectionProps) {
                     onChange={(e) => setRegion(e.target.value)}
                     onFocus={() => setShowLocationSuggestions(true)}
                     onKeyPress={handleKeyPress}
-                    className="pl-14 pr-4 h-16 border-0 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-0 focus:outline-none text-base rounded-full"
+                    className="w-full h-16 text-base pl-14 pr-4 border-0 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-0 focus:outline-none rounded-full overflow-visible"
                   />
                   <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
@@ -178,7 +178,7 @@ export function SearchSection({ onAIPromptClick }: SearchSectionProps) {
                     onChange={(e) => setShootType(e.target.value)}
                     onFocus={() => setShowEventSuggestions(true)}
                     onKeyPress={handleKeyPress}
-                    className="pl-14 pr-4 h-16 border-0 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-0 focus:outline-none text-base rounded-full"
+                    className="w-full h-16 text-base pl-14 pr-4 border-0 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-0 focus:outline-none rounded-full overflow-visible"
                   />
                   <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
@@ -211,7 +211,7 @@ export function SearchSection({ onAIPromptClick }: SearchSectionProps) {
               {/* Search Button */}
               <Button
                 onClick={handleSearch}
-                className="h-12 px-8 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-full text-base font-medium ml-2"
+                className="flex items-center justify-center h-16 px-8 rounded-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-base ml-2"
               >
                 <Search className="h-5 w-5 mr-2" />
                 Search

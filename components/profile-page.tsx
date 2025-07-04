@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import CreateLeadDialog from "@/components/create-lead-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -208,14 +209,7 @@ export default function ProfilePage({ data }: ProfilePageProps) {
 
             {/* Contact Buttons */}
             <div ref={contactButtonsRef} className="flex flex-col gap-3 w-full sm:w-auto sm:min-w-[200px]">
-              <Button size="lg" className="w-full">
-                <Phone className="h-4 w-4 mr-2" />
-                Contact Now
-              </Button>
-              <Button variant="outline" size="lg" className="w-full bg-transparent">
-                <Mail className="h-4 w-4 mr-2" />
-                Send Message
-              </Button>
+              <CreateLeadDialog />
             </div>
           </div>
 
@@ -422,10 +416,6 @@ export default function ProfilePage({ data }: ProfilePageProps) {
             <Button className="flex-1 h-12">
               <Phone className="h-4 w-4 mr-2" />
               Contact
-            </Button>
-            <Button variant="outline" className="flex-1 h-12 bg-transparent">
-              <Mail className="h-4 w-4 mr-2" />
-              Message
             </Button>
           </div>
         </div>

@@ -1,11 +1,12 @@
 import type React from "react"
-import { Star, MapPin, Heart, MessageCircle } from "lucide-react"
+import { Star, MapPin, Heart } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import CreateLeadDialog from "@/components/create-lead-dialog"
 
-interface PhotographerCardProps {
+interface PartnerCardProps {
   id?: string
   name: string
   image: string
@@ -18,7 +19,7 @@ interface PhotographerCardProps {
   verified?: boolean
 }
 
-export function PhotographerCard({
+export function PartnerCard({
   id,
   name,
   image,
@@ -29,7 +30,7 @@ export function PhotographerCard({
   experience,
   isFavorite = false,
   verified = false,
-}: PhotographerCardProps) {
+}: PartnerCardProps) {
   const cardContent = (
     <Card className="group w-full cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden">
       <div className="relative">
@@ -111,11 +112,8 @@ export function PhotographerCard({
             <div className="mt-1 truncate">Reviews: Great experience, all events successfully...</div>
           </div>
 
-          {/* Chat Button */}
-          <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white text-sm py-2">
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Chat with Vendor
-          </Button>
+          {/* Connect Button */}
+          <CreateLeadDialog />
         </div>
       </CardContent>
     </Card>

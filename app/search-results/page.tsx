@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, Suspense } from "react"
+import { useState, useMemo, Suspense, useEffect, useRef, useCallback } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Star, MapPin, Camera, Filter, X, ArrowLeft, SlidersHorizontal } from "lucide-react"
 import { PhotographerCard } from "@/components/photographer-card"
-import { StudioCard } from "@/components/studio-card"
+import { PartnerCard } from "@/components/photographer-card"
 import { usePartners } from "@/hooks/use-api-data"
 import { PhotographerSkeleton } from "@/components/skeleton-loader"
 import Link from "next/link"
+import UserAuthButtons from "@/components/user-auth-buttons"
 
 interface SearchFilters {
   location?: string
@@ -22,6 +23,17 @@ interface SearchFilters {
   maxPrice?: number
   sortBy?: string
   sortOrder?: "asc" | "desc"
+  page?: number
+}
+
+const normalizeSpecialization = (spec: string) => {
+  // Convert to title case, but force 'photography' to be lowercase
+  if (!spec) return ''
+  let formatted = spec.replace(/_/g, ' ')
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+  // Lowercase only the word 'Photography' at the end
+  formatted = formatted.replace(/Photography$/, 'photography')
+  return formatted
 }
 
 function SearchResultsContent() {
@@ -31,13 +43,14 @@ function SearchResultsContent() {
   // Get initial filters from URL with safe defaults
   const initialFilters: SearchFilters = {
     location: searchParams.get("location") || undefined,
-    specialization: searchParams.get("specialization") || undefined,
+    specialization: searchParams.get("specialization") ? normalizeSpecialization(searchParams.get("specialization")!) : undefined,
     partnerType: searchParams.get("partnerType") || undefined,
     minRating: searchParams.get("minRating") ? Number(searchParams.get("minRating")) : undefined,
     minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined,
     maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
     sortBy: searchParams.get("sortBy") || "avgRating",
     sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
+    page: searchParams.get("page") ? Number(searchParams.get("page")) : undefined,
   }
 
   const [filters, setFilters] = useState<SearchFilters>(initialFilters)
@@ -46,9 +59,15 @@ function SearchResultsContent() {
   const [ratingFilter, setRatingFilter] = useState<number | null>(null)
   const [typeFilters, setTypeFilters] = useState<string[]>([])
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [page, setPage] = useState(1)
 
-  // Use the custom hook to fetch partners
-  const { partners, loading, error, pagination } = usePartners(filters)
+  const filtersWithPage = { ...filters, page }
+  const { partners, loading, error, pagination } = usePartners(filtersWithPage)
+
+  // Reset to first page when filters change (except page)
+  useEffect(() => {
+    setPage(1)
+  }, [JSON.stringify({ ...filters, page: undefined })])
 
   // Deduplicate partners by their unique _id to avoid rendering duplicates that
   // trigger React "duplicate key" warnings when mapping over the list.
@@ -90,7 +109,11 @@ function SearchResultsContent() {
   }
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
-    const newFilters = { ...filters, [key]: value }
+    let newValue = value
+    if (key === 'specialization' && typeof value === 'string') {
+      newValue = normalizeSpecialization(value)
+    }
+    const newFilters = { ...filters, [key]: newValue }
     setFilters(newFilters)
     updateURL(newFilters)
   }
@@ -174,15 +197,7 @@ function SearchResultsContent() {
             </Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-300">
-              Sign in
-            </Button>
-            <Button
-              size="sm"
-              className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
-            >
-              Join now
-            </Button>
+            <UserAuthButtons />
           </div>
         </div>
       </header>
@@ -226,8 +241,8 @@ function SearchResultsContent() {
                         </div>
                       </div>
                       <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                        <span>₹{budgetRange[0].toLocaleString()}</span>
-                        <span>₹{budgetRange[1].toLocaleString()}</span>
+                        <span>₹{budgetRange[0].toLocaleString('en-IN')}</span>
+                        <span>₹{budgetRange[1].toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
@@ -315,7 +330,7 @@ function SearchResultsContent() {
                   <div className="mb-8">
                     <h4 className="font-medium text-gray-900 dark:text-white mb-4 flex items-center justify-between">
                       <span>Budget</span>
-                      <span className="text-sm text-gray-500">≤ ₹{budgetRange[1].toLocaleString()}</span>
+                      <span className="text-sm text-gray-500">≤ ₹{budgetRange[1].toLocaleString('en-IN')}</span>
                     </h4>
                     <div className="px-2">
                       <input
@@ -328,8 +343,8 @@ function SearchResultsContent() {
                         className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-gray-900 dark:accent-white"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-2">
-                        <span>10K</span>
-                        <span>10L</span>
+                        <span>₹{budgetRange[0].toLocaleString('en-IN')}</span>
+                        <span>₹{budgetRange[1].toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
@@ -463,7 +478,7 @@ function SearchResultsContent() {
                     {filteredPartners.map((partner) => (
                       <div key={partner._id}>
                         {partner.partnerType === "studio" ? (
-                          <StudioCard
+                          <PartnerCard
                             id={partner._id}
                             name={partner.companyName}
                             image={partner.banner || partner.portfolio?.[0] || "/placeholder.svg?height=200&width=300"}
@@ -545,7 +560,7 @@ function SearchResultsContent() {
                   {filteredPartners
                     .filter((p) => p.partnerType === "studio")
                     .map((partner) => (
-                      <StudioCard
+                      <PartnerCard
                         id={partner._id}
                         key={partner._id}
                         name={partner.companyName}
@@ -561,6 +576,37 @@ function SearchResultsContent() {
                 </div>
               </TabsContent>
             </Tabs>
+
+            {pagination && pagination.pages > 1 && (
+              <div className="flex justify-center items-center gap-2 my-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Previous
+                </Button>
+                {Array.from({ length: pagination.pages }, (_, i) => (
+                  <Button
+                    key={i + 1}
+                    variant={page === i + 1 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(i + 1)}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === pagination.pages}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

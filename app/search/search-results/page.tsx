@@ -5,8 +5,7 @@ import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { SearchFilters, type FiltersState } from "@/components/search-filters"
-import { StudioCard } from "@/components/studio-card"
-import { PhotographerCard } from "@/components/photographer-card"
+import { PartnerCard } from "@/components/photographer-card"
 import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 
@@ -216,7 +215,7 @@ export default function SearchResultsPage() {
               <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
                 {filtered.map((partner) => {
                   const photographerData = transformToPhotographer(partner)
-                  return <PhotographerCard key={partner._id} {...photographerData} />
+                  return <PartnerCard key={partner._id} {...photographerData} />
                 })}
               </div>
             )}
@@ -246,7 +245,7 @@ export default function SearchResultsPage() {
                   .filter((p) => p.partnerType === "studio")
                   .map((partner) => {
                     const studioData = transformToStudio(partner)
-                    return <StudioCard key={partner._id} {...studioData} />
+                    return <PartnerCard key={partner._id} {...studioData} />
                   })}
               </div>
             )}

@@ -14,14 +14,15 @@ import { MobileAppPromo } from "@/components/mobile-app-promo"
 import { FaqSection } from "@/components/faq-section"
 import { NewsletterSignup } from "@/components/newsletter-signup"
 import { StatsSection } from "@/components/stats-section"
-import { PhotographerCard } from "@/components/photographer-card"
-import { StudioCard } from "@/components/studio-card"
+import { PartnerCard } from "@/components/photographer-card"
 import { CategorySection } from "@/components/category-section"
 import { SearchSection } from "@/components/search-section"
 import { usePhotographers, useStudios } from "@/hooks/use-api-data"
 import { Textarea } from "@/components/ui/textarea"
 import { apiClient } from "@/lib/api-client"
 import { haversineDistance, CITY_COORDS } from "@/lib/utils"
+import dynamic from "next/dynamic"
+import { usePartnerCardCache } from "./hooks/use-partner-cache"
 
 // Data arrays
 const workSteps = [
@@ -169,6 +170,8 @@ function ErrorDisplay({ error, onRetry }: { error: string; onRetry?: () => void 
   )
 }
 
+const UserAuthButtons = dynamic(() => import("@/components/user-auth-buttons"), { ssr: false })
+
 export default function Home() {
   // List of major Indian cities for fallback
   const majorCities = [
@@ -299,7 +302,12 @@ export default function Home() {
   // Convert category to API specialization format
   const getSpecializationFilter = (category: string) => {
     if (category === "All") return undefined
-    return category.toLowerCase().replace(/ /g, "_") + "_photography"
+    // Convert to title case, but force 'photography' to be lowercase
+    let formatted = category.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+    if (!formatted.endsWith('photography')) {
+      formatted += ' photography'
+    }
+    return formatted
   }
 
   const {
@@ -423,6 +431,25 @@ export default function Home() {
   const [statsLoading, setStatsLoading] = useState(true)
   const [statsError, setStatsError] = useState<string | null>(null)
 
+  const { cards, setCards, lastFetched } = usePartnerCardCache()
+  const [displayedCards, setDisplayedCards] = useState<any[]>(cards)
+  const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+
+  useEffect(() => {
+    // If cache is fresh, use it instantly
+    if (cards.length > 0 && lastFetched && Date.now() - lastFetched < CACHE_TTL) {
+      setDisplayedCards(cards)
+    }
+  }, [])
+
+  // When photographers are fetched, update cache and displayedCards
+  useEffect(() => {
+    if (userCityPhotographers && userCityPhotographers.length > 0) {
+      setCards(userCityPhotographers)
+      setDisplayedCards(userCityPhotographers)
+    }
+  }, [userCityPhotographers])
+
   useEffect(() => {
     async function fetchStats() {
       try {
@@ -532,15 +559,7 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
-            <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-300 hidden sm:inline-flex">
-              Sign in
-            </Button>
-            <Button
-              size="sm"
-              className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
-            >
-              Join now
-            </Button>
+            <UserAuthButtons />
           </div>
         </div>
       </header>
@@ -618,8 +637,8 @@ export default function Home() {
                     <ErrorDisplay error={userCityError} />
                   </div>
                 ) : (
-                  userCityPhotographers.map((photographer: Photographer, index: number) => (
-                    <PhotographerCard
+                  displayedCards.map((photographer: Photographer, index: number) => (
+                    <PartnerCard
                       key={photographer.id || index}
                       {...photographer}
                       isFavorite={Number.parseFloat(photographer.rating) >= 4.9}
@@ -643,7 +662,7 @@ export default function Home() {
                   </div>
                 ) : (
                   otherCity1Photographers.map((photographer: Photographer, index: number) => (
-                    <PhotographerCard
+                    <PartnerCard
                       key={photographer.id || index}
                       {...photographer}
                       isFavorite={Number.parseFloat(photographer.rating) >= 4.9}
@@ -667,7 +686,7 @@ export default function Home() {
                   </div>
                 ) : (
                   otherCity2Photographers.map((photographer: Photographer, index: number) => (
-                    <PhotographerCard
+                    <PartnerCard
                       key={photographer.id || index}
                       {...photographer}
                       isFavorite={Number.parseFloat(photographer.rating) >= 4.9}
@@ -691,7 +710,7 @@ export default function Home() {
                   </div>
                 ) : (
                   studios.map((studio, index) => (
-                    <StudioCard
+                    <PartnerCard
                       key={studio.id || index}
                       {...studio}
                       isFavorite={Number.parseFloat(studio.rating) >= 4.9}
