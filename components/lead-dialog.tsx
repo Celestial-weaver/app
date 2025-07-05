@@ -178,8 +178,7 @@ export function LeadDialog({ lead = sampleLead, open, onOpenChange }: LeadDialog
                 <DollarSign className="w-4 h-4 text-muted-foreground" />
                 <span className="font-medium">Budget:</span>
                 <span>
-                  {formatCurrency(lead.budget.min, lead.budget.currency)} -{" "}
-                  {formatCurrency(lead.budget.max, lead.budget.currency)}
+                  {formatCurrency(lead.budget.min, lead.budget.currency)} - {formatCurrency(lead.budget.max, lead.budget.currency)}
                 </span>
               </div>
             </CardContent>
@@ -293,5 +292,4 @@ export function LeadDialog({ lead = sampleLead, open, onOpenChange }: LeadDialog
       </DialogContent>
     </Dialog>
   )
-}
-s
+} 

@@ -13,8 +13,12 @@ interface PartnerCardProps {
   rating: string
   price: string
   location: string
-  specialty: string
-  experience: string
+  /** For PhotographerCard */
+  specialty?: string
+  experience?: string
+  /** For PartnerCard */
+  specialties?: string[]
+  photographers?: number
   isFavorite?: boolean
   verified?: boolean
 }
@@ -113,7 +117,14 @@ export function PartnerCard({
           </div>
 
           {/* Connect Button */}
-          <CreateLeadDialog />
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+          >
+            <CreateLeadDialog partnerId={id} />
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -124,3 +135,5 @@ export function PartnerCard({
   }
   return cardContent
 }
+
+export { PartnerCard as PhotographerCard }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { apiClient, type Partner, type StatsResponse } from "@/lib/api-client"
+import { getCache, setCache } from "@/lib/cache"
 
 // Shared type helpers
 type SortOrder = "asc" | "desc"
@@ -28,6 +29,9 @@ export interface UseStudiosParams {
 export interface UseLocationsParams {
   limit?: number
 }
+
+// Add after imports near top
+const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 
 // Mapping functions with safe defaults
 const mapPartnerToPhotographer = (partner: Partner) => {
@@ -74,6 +78,17 @@ export function usePhotographers(params: UsePhotographersParams = {}) {
   const [error, setError] = useState<string | null>(null)
   const [hasNextPage, setHasNextPage] = useState(false)
 
+  // Attempt to serve from cache first for snappy navigation
+  useEffect(() => {
+    const cacheKey = `photographers:${JSON.stringify(params)}`
+    const cached = getCache<{ list: any[]; hasNext: boolean }>(cacheKey, CACHE_TTL)
+    if (cached) {
+      setPhotographers(cached.list)
+      setHasNextPage(cached.hasNext)
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
@@ -107,6 +122,10 @@ export function usePhotographers(params: UsePhotographersParams = {}) {
             return [...prev, ...uniqueToAdd]
           })
           setHasNextPage(response.data.pagination?.hasNext || false)
+
+          // Persist to cache for future navigations
+          const cacheKey = `photographers:${JSON.stringify(queryParams)}`
+          setCache(cacheKey, { list: mappedPhotographers, hasNext: response.data.pagination?.hasNext || false })
         } else if (!cancelled) {
           setError(response.message || "Failed to load photographers")
         }
@@ -137,6 +156,17 @@ export function useStudios(params: UseStudiosParams = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasNextPage, setHasNextPage] = useState(false)
+
+  // Attempt to serve from cache first for snappy navigation
+  useEffect(() => {
+    const cacheKey = `studios:${JSON.stringify(params)}`
+    const cached = getCache<{ list: any[]; hasNext: boolean }>(cacheKey, CACHE_TTL)
+    if (cached) {
+      setStudios(cached.list)
+      setHasNextPage(cached.hasNext)
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -170,6 +200,10 @@ export function useStudios(params: UseStudiosParams = {}) {
             return [...prev, ...uniqueToAdd]
           })
           setHasNextPage(response.data.pagination?.hasNext || false)
+
+          // Persist to cache for future navigations
+          const cacheKey = `studios:${JSON.stringify(queryParams)}`
+          setCache(cacheKey, { list: mappedStudios, hasNext: response.data.pagination?.hasNext || false })
         } else if (!cancelled) {
           setError(response.message || "Failed to load studios")
         }
@@ -200,6 +234,16 @@ export function useLocations(params: UseLocationsParams = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Attempt to serve from cache first for snappy navigation
+  useEffect(() => {
+    const cacheKey = `locations` // only one variant
+    const cached = getCache<{ list: { name: string; photographers: number }[] }>(cacheKey, CACHE_TTL)
+    if (cached) {
+      setLocations(cached.list)
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
@@ -219,6 +263,9 @@ export function useLocations(params: UseLocationsParams = {}) {
             photographers: Math.floor(Math.random() * 100) + 20, // placeholder count (TODO: replace with real count)
           }))
           setLocations(mappedLocations)
+
+          // Persist to cache for future navigations
+          setCache("locations", { list: mappedLocations })
         } else if (!cancelled) {
           setError(response.message || "Failed to load locations")
         }
@@ -310,6 +357,17 @@ export function usePartners(filters: Record<string, any> = {}) {
   const [error, setError] = useState<string | null>(null)
   const [pagination, setPagination] = useState<any>(null)
 
+  // Attempt to serve from cache first for snappy navigation
+  useEffect(() => {
+    const key = `partners:${JSON.stringify(filters)}`
+    const cached = getCache<{ list: Partner[]; pagination: any }>(key, CACHE_TTL)
+    if (cached) {
+      setPartners(cached.list)
+      setPagination(cached.pagination)
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
@@ -323,6 +381,12 @@ export function usePartners(filters: Record<string, any> = {}) {
         if (!cancelled && response.success && response.data) {
           setPartners(response.data.partners || [])
           setPagination(response.data.pagination)
+
+          // Persist to cache for future navigations
+          setCache(`partners:${JSON.stringify(filters)}`, {
+            list: response.data.partners || [],
+            pagination: response.data.pagination,
+          })
         } else if (!cancelled) {
           setError(response.message || "Failed to fetch partners")
         }
@@ -353,6 +417,15 @@ export function useStats() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Attempt to serve from cache first for snappy navigation
+  useEffect(() => {
+    const cached = getCache<StatsResponse>("stats", CACHE_TTL)
+    if (cached) {
+      setStats(cached as unknown as StatsResponse)
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
@@ -365,6 +438,11 @@ export function useStats() {
 
         if (!cancelled && response.success && response.data) {
           setStats(response.data)
+
+          // Persist to cache for future navigations
+          if (response.data) {
+            setCache("stats", response.data)
+          }
         } else if (!cancelled) {
           setError(response.message || "Failed to fetch stats")
         }

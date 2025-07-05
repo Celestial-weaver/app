@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import { PhotographerSkeleton, BlogSkeleton, TestimonialSkeleton, StudioSkeleton } from "@/components/skeleton-loader"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { FeaturedLocations } from "@/components/featured-locations"
 import { PricingPlans } from "@/components/pricing-plans"
 import { MobileAppPromo } from "@/components/mobile-app-promo"
@@ -21,7 +20,6 @@ import { usePhotographers, useStudios } from "@/hooks/use-api-data"
 import { Textarea } from "@/components/ui/textarea"
 import { apiClient } from "@/lib/api-client"
 import { haversineDistance, CITY_COORDS } from "@/lib/utils"
-import dynamic from "next/dynamic"
 import { usePartnerCardCache } from "./hooks/use-partner-cache"
 
 // Data arrays
@@ -169,8 +167,6 @@ function ErrorDisplay({ error, onRetry }: { error: string; onRetry?: () => void 
     </div>
   )
 }
-
-const UserAuthButtons = dynamic(() => import("@/components/user-auth-buttons"), { ssr: false })
 
 export default function Home() {
   // List of major Indian cities for fallback
@@ -519,50 +515,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-      {/* Header */}
-      <header className="border-b border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
-            Pixisphere
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link
-              href="#photographers"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Photographers
-            </Link>
-            <Link
-              href="#studios"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Studios
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              How it works
-            </Link>
-            <Link
-              href="#pricing"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="#blog"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Blog
-            </Link>
-          </nav>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <ThemeToggle />
-            <UserAuthButtons />
-          </div>
-        </div>
-      </header>
+      {/* Header now provided by SiteHeader in RootLayout */}
 
       <main>
         {/* Enhanced Search Section */}

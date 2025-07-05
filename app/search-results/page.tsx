@@ -6,13 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, MapPin, Camera, Filter, X, ArrowLeft, SlidersHorizontal } from "lucide-react"
+import { Star, MapPin, Filter, X } from "lucide-react"
 import { PhotographerCard } from "@/components/photographer-card"
 import { PartnerCard } from "@/components/photographer-card"
 import { usePartners } from "@/hooks/use-api-data"
 import { PhotographerSkeleton } from "@/components/skeleton-loader"
 import Link from "next/link"
 import UserAuthButtons from "@/components/user-auth-buttons"
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select"
+import { useFilterOptions } from "@/hooks/use-filter-options"
 
 interface SearchFilters {
   location?: string
@@ -61,6 +69,13 @@ function SearchResultsContent() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [page, setPage] = useState(1)
 
+  // Fetch filter options dynamically
+  const {
+    locations: locationOptions,
+    specializations: specializationOptions,
+    loading: loadingFilterOptions,
+  } = useFilterOptions()
+
   const filtersWithPage = { ...filters, page }
   const { partners, loading, error, pagination } = usePartners(filtersWithPage)
 
@@ -92,6 +107,9 @@ function SearchResultsContent() {
   }
 
   const filteredPartners = getFilteredPartners()
+
+  // List that will be rendered after applying filters
+  const partnersToRender = filteredPartners
 
   const formatSpecialization = (spec: string) => {
     if (!spec) return ""
@@ -134,73 +152,16 @@ function SearchResultsContent() {
     setTypeFilters((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [type]))
   }
 
+  // Update URL when page changes
+  useEffect(() => {
+    updateURL({ ...filters, page })
+    // Scroll to top of results when page changes
+    window?.scrollTo({ top: 0, behavior: "smooth" })
+  }, [page])
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Mobile Header */}
-      <header className="lg:hidden border-b border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="p-2">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Search Results</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {loading ? "Loading..." : `${filteredPartners.length} found`}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowMobileFilters(!showMobileFilters)}
-            className="flex items-center gap-2"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            <span>Filters</span>
-          </Button>
-        </div>
-      </header>
-
-      {/* Desktop Header */}
-      <header className="hidden lg:block border-b border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Pixisphere
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link
-              href="/#photographers"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Photographers
-            </Link>
-            <Link
-              href="/#studios"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Studios
-            </Link>
-            <Link
-              href="/#how-it-works"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              How it works
-            </Link>
-            <Link
-              href="/#pricing"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <UserAuthButtons />
-          </div>
-        </div>
-      </header>
+      {/* Headers removed; global SiteHeader handles navigation */}
 
       <div className="max-w-7xl mx-auto">
         <div className="flex">
@@ -303,7 +264,7 @@ function SearchResultsContent() {
                       onClick={() => setShowMobileFilters(false)}
                       className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
                     >
-                      Apply Filters ({filteredPartners.length} results)
+                      Apply Filters ({pagination?.total ?? 0} results)
                     </Button>
                   </div>
                 </div>
@@ -353,7 +314,7 @@ function SearchResultsContent() {
                   <div className="mb-8">
                     <h4 className="font-medium text-gray-900 dark:text-white mb-4 flex items-center justify-between">
                       <span>Rating</span>
-                      {ratingFilter && <span className="text-sm text-gray-500">≤ {ratingFilter}★</span>}
+                      {ratingFilter !== null && <span className="text-sm text-gray-500">≤ {ratingFilter}★</span>}
                     </h4>
                     <div className="px-2">
                       <input
@@ -405,50 +366,78 @@ function SearchResultsContent() {
                 {filters.location && <span className="text-gray-600 dark:text-gray-400"> in {filters.location}</span>}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {loading ? "Loading..." : `${filteredPartners.length} results found`}
+                {loading
+                  ? "Loading..."
+                  : `${pagination?.total ?? partnersToRender.length} found`}
               </p>
             </div>
 
             {/* Active Filters */}
-            {(filters.location || filters.specialization || ratingFilter || typeFilters.length > 0) && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {filters.location && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {filters.location}
-                    <button onClick={() => handleFilterChange("location", undefined)}>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {filters.specialization && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Camera className="h-3 w-3" />
-                    {formatSpecialization(filters.specialization)}
-                    <button onClick={() => handleFilterChange("specialization", undefined)}>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {ratingFilter && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    {ratingFilter}+ stars
-                    <button onClick={() => setRatingFilter(null)}>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {typeFilters.map((type) => (
-                  <Badge key={type} variant="secondary" className="flex items-center gap-1">
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                    <button onClick={() => toggleTypeFilter(type)}>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
+            {/* Filters Row */}
+            <div className="flex flex-wrap gap-4 mb-6 items-center">
+              {/* Location Select */}
+              <Select
+                value={filters.location}
+                onValueChange={(val) => handleFilterChange("location", val)}
+              >
+                <SelectTrigger className="w-auto min-w-[180px]">
+                  <SelectValue placeholder="Select location">{filters.location}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {loadingFilterOptions ? (
+                    <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>
+                  ) : (
+                    locationOptions.map((loc: string) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+
+              {/* Shoot Type Select */}
+              <Select
+                value={filters.specialization}
+                onValueChange={(val) => handleFilterChange("specialization", val)}
+              >
+                <SelectTrigger className="w-auto min-w-[200px]">
+                  <SelectValue placeholder="Select shoot type">{filters.specialization}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {loadingFilterOptions ? (
+                    <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>
+                  ) : (
+                    specializationOptions.map((spec: string) => {
+                      const formatted = normalizeSpecialization(spec)
+                      return (
+                        <SelectItem key={spec} value={formatted}>
+                          {formatted}
+                        </SelectItem>
+                      )
+                    })
+                  )}
+                </SelectContent>
+              </Select>
+
+              {ratingFilter !== null && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Star className="h-3 w-3" />
+                  {ratingFilter}+ stars
+                  <button onClick={() => setRatingFilter(null)}>
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {typeFilters.map((type) => (
+                <Badge key={type} variant="secondary" className="flex items-center gap-1">
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  <button onClick={() => toggleTypeFilter(type)}>
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
@@ -469,13 +458,13 @@ function SearchResultsContent() {
                   <div className="text-center py-12">
                     <p className="text-gray-600 dark:text-gray-400">{error}</p>
                   </div>
-                ) : filteredPartners.length === 0 ? (
+                ) : partnersToRender.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-gray-600 dark:text-gray-400">No results found. Try adjusting your filters.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                    {filteredPartners.map((partner) => (
+                    {partnersToRender.map((partner) => (
                       <div key={partner._id}>
                         {partner.partnerType === "studio" ? (
                           <PartnerCard
@@ -484,7 +473,7 @@ function SearchResultsContent() {
                             image={partner.banner || partner.portfolio?.[0] || "/placeholder.svg?height=200&width=300"}
                             rating={partner.avgRating?.toFixed(1) || "4.0"}
                             location={partner.servingLocations?.join(", ") || "Multiple locations"}
-                            specialties={partner.specializations?.map((s) => formatSpecialization(s)) || []}
+                            specialties={partner.specializations?.map((s: string) => formatSpecialization(s)) || []}
                             photographers={partner.projectStats?.total || 0}
                             isFavorite={(partner.avgRating || 0) >= 4.5}
                             price={partner.services?.[0]?.basePrice?.toLocaleString()}
@@ -523,7 +512,7 @@ function SearchResultsContent() {
 
               <TabsContent value="photographers" className="mt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                  {filteredPartners
+                  {partnersToRender
                     .filter((p) => p.partnerType !== "studio")
                     .map((partner) => (
                       <PhotographerCard
@@ -557,7 +546,7 @@ function SearchResultsContent() {
 
               <TabsContent value="studios" className="mt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                  {filteredPartners
+                  {partnersToRender
                     .filter((p) => p.partnerType === "studio")
                     .map((partner) => (
                       <PartnerCard
@@ -567,7 +556,7 @@ function SearchResultsContent() {
                         image={partner.banner || partner.portfolio?.[0] || "/placeholder.svg?height=200&width=300"}
                         rating={partner.avgRating?.toFixed(1) || "4.0"}
                         location={partner.servingLocations?.join(", ") || "Multiple locations"}
-                        specialties={partner.specializations?.map((s) => formatSpecialization(s)) || []}
+                        specialties={partner.specializations?.map((s: string) => formatSpecialization(s)) || []}
                         photographers={partner.projectStats?.total || 0}
                         isFavorite={(partner.avgRating || 0) >= 4.5}
                         price={partner.services?.[0]?.basePrice?.toLocaleString()}

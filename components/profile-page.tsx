@@ -137,19 +137,17 @@ export default function ProfilePage({ data }: ProfilePageProps) {
   }, [data.portfolio])
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/" className="inline-flex items-center text-slate-600 hover:text-slate-900 transition-colors">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profiles
-          </Link>
-        </div>
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+      {/* Back link */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <Link href="/" className="inline-flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Profiles
+        </Link>
       </div>
 
       {/* Hero Section */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row gap-6 items-start">
             {/* Profile Info */}
@@ -161,23 +159,23 @@ export default function ProfilePage({ data }: ProfilePageProps) {
 
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
-                  <h1 className="text-3xl font-bold text-slate-900">{data.companyName}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{data.companyName}</h1>
                   {data.verified && <CheckCircle className="h-6 w-6 text-blue-500 mx-auto sm:mx-0" />}
                 </div>
 
                 <div className="flex flex-wrap gap-2 justify-center sm:justify-start mb-4">
                   <Badge variant="secondary">{data.partnerType === "company" ? "Company" : "Individual"}</Badge>
-                  <Badge variant="outline" className="flex items-center gap-1">
+                  <Badge variant="outline" className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                     <Calendar className="h-3 w-3" />
                     {data.experienceYears} years experience
                   </Badge>
-                  <Badge variant="outline" className="flex items-center gap-1">
+                  <Badge variant="outline" className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                     <MapPin className="h-3 w-3" />
                     {data.servingLocations.join(", ")}
                   </Badge>
                 </div>
 
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-4">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-4 text-gray-900 dark:text-white">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -188,18 +186,18 @@ export default function ProfilePage({ data }: ProfilePageProps) {
                       />
                     ))}
                   </div>
-                  <span className="font-semibold text-slate-900">{data.avgRating}</span>
-                  <span className="text-slate-600">({data.totalReviews} reviews)</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{data.avgRating}</span>
+                  <span className="text-gray-500 dark:text-gray-400">({data.totalReviews} reviews)</span>
                 </div>
 
                 <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                   {data.specializations.slice(0, 3).map((spec, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                    <Badge key={index} variant="outline" className="text-xs text-gray-700 dark:text-gray-300">
                       {formatSpecialization(spec)}
                     </Badge>
                   ))}
                   {data.specializations.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs text-gray-700 dark:text-gray-300">
                       +{data.specializations.length - 3} more
                     </Badge>
                   )}
@@ -209,7 +207,7 @@ export default function ProfilePage({ data }: ProfilePageProps) {
 
             {/* Contact Buttons */}
             <div ref={contactButtonsRef} className="flex flex-col gap-3 w-full sm:w-auto sm:min-w-[200px]">
-              <CreateLeadDialog />
+              <CreateLeadDialog partnerId={data._id} />
             </div>
           </div>
 
@@ -218,30 +216,30 @@ export default function ProfilePage({ data }: ProfilePageProps) {
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <Award className="h-5 w-5 text-blue-600 mr-1" />
-                <span className="text-2xl font-bold text-slate-900">{data.projectStats.total}</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">{data.projectStats.total}</span>
               </div>
-              <p className="text-sm text-slate-600">Total Projects</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Projects</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mr-1" />
-                <span className="text-2xl font-bold text-slate-900">{Math.round(data.completionRate)}%</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">{Math.round(data.completionRate)}%</span>
               </div>
-              <p className="text-sm text-slate-600">Success Rate</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Success Rate</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <Users className="h-5 w-5 text-purple-600 mr-1" />
-                <span className="text-2xl font-bold text-slate-900">{data.totalReviews}</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">{data.totalReviews}</span>
               </div>
-              <p className="text-sm text-slate-600">Happy Clients</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Happy Clients</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <Clock className="h-5 w-5 text-orange-600 mr-1" />
-                <span className="text-2xl font-bold text-slate-900">{data.projectStats.ongoing}</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">{data.projectStats.ongoing}</span>
               </div>
-              <p className="text-sm text-slate-600">Active Projects</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Active Projects</p>
             </div>
           </div>
         </div>
@@ -308,12 +306,12 @@ export default function ProfilePage({ data }: ProfilePageProps) {
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h3 className="text-xl font-semibold text-slate-900 mb-2">{service.name}</h3>
-                          {service.description && <p className="text-slate-600">{service.description}</p>}
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{service.name}</h3>
+                          {service.description && <p className="text-gray-600 dark:text-gray-400">{service.description}</p>}
                         </div>
                         <div className="text-right ml-4">
                           <div className="text-2xl font-bold text-green-600">{formatPrice(service.basePrice)}</div>
-                          <div className="text-sm text-slate-500">{service.priceUnit.replace("_", " ")}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{service.priceUnit.replace("_", " ")}</div>
                         </div>
                       </div>
                     </div>
@@ -341,7 +339,7 @@ export default function ProfilePage({ data }: ProfilePageProps) {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {data.specializations.map((spec, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
+                    <Badge key={index} variant="secondary" className="text-sm text-gray-700 dark:text-gray-300">
                       {formatSpecialization(spec)}
                     </Badge>
                   ))}
@@ -360,10 +358,10 @@ export default function ProfilePage({ data }: ProfilePageProps) {
               <CardContent className="space-y-4">
                 {data.partnerLocations.map((location) => (
                   <div key={location._id}>
-                    <h3 className="font-semibold text-slate-900 mb-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                       {location.city}, {location.state}
                     </h3>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
                       <strong>Pin Codes:</strong> {location.pinCodesServed.join(", ")}
                     </div>
                   </div>
@@ -391,7 +389,7 @@ export default function ProfilePage({ data }: ProfilePageProps) {
                           >
                             <Link href={url} target="_blank" rel="noopener noreferrer">
                               {getSocialIcon(platform)}
-                              <span className="ml-2 capitalize">{platform}</span>
+                              <span className="ml-2 capitalize text-gray-700 dark:text-gray-300">{platform}</span>
                             </Link>
                           </Button>
                         ),

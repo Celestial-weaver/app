@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback, AvatarInitials } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
-import { signOut } from "firebase/auth"
+import { signOut, onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
@@ -23,13 +23,55 @@ export default function UserAuthButtons({ className }: { className?: string }) {
   const router = useRouter()
 
   useEffect(() => {
+    // 1. Sync from localStorage for immediate render
     try {
       const json = localStorage.getItem("user")
       if (json) {
         setUser(JSON.parse(json))
       }
     } catch {
-      // ignore
+      // ignore parsing errors
+    }
+
+    // 2. Listen to Firebase auth changes to catch login/logout in same tab
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // re-read localStorage if available (set by login page)
+        const stored = localStorage.getItem("user")
+        if (stored) {
+          try {
+            setUser(JSON.parse(stored))
+          } catch {
+            setUser(null)
+          }
+        } else {
+          // fallback minimal user object
+          setUser({ username: firebaseUser.email?.split("@")[0] || "User", profilePic: firebaseUser.photoURL || undefined })
+        }
+      } else {
+        setUser(null)
+      }
+    })
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "user") {
+        if (e.newValue) {
+          try {
+            setUser(JSON.parse(e.newValue))
+          } catch {
+            setUser(null)
+          }
+        } else {
+          setUser(null)
+        }
+      }
+    }
+
+    window.addEventListener("storage", handleStorage)
+
+    return () => {
+      window.removeEventListener("storage", handleStorage)
+      unsubscribeAuth()
     }
   }, [])
 
